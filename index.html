@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>🐢 Beau's Shell-No! 🐢</title>
     
     <!-- PWA Setup -->
@@ -19,104 +19,129 @@
             --accent: #f1c40f;
             --danger: #e74c3c;
             --info: #3498db;
-            --panel-bg: rgba(30, 40, 50, 0.95);
+            --panel-bg: rgba(20, 30, 40, 0.95);
         }
+        
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
         body {
             background-color: #1a252f;
             color: white;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             text-align: center;
             margin: 0;
-            padding: 10px;
+            padding: 0;
             overflow: hidden;
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
             height: 100vh;
+            width: 100vw;
             user-select: none;
         }
         
-        /* Header */
+        /* Header - Collapsible */
         header {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-bottom: 5px;
+            position: absolute;
+            top: 10px;
+            left: 0;
+            width: 100%;
+            z-index: 50;
+            transition: transform 0.5s ease-in-out, opacity 0.5s;
+            pointer-events: none; /* Let clicks pass through */
         }
-        h1 { margin: 0; font-size: 32px; color: var(--primary); text-shadow: 2px 2px #000; font-family: 'Courier New', Courier, monospace; letter-spacing: -1px; font-weight: 900; }
-        .subtitle { font-size: 14px; color: #bdc3c7; font-style: italic; opacity: 0.8; margin-top: -5px; }
+        header.collapsed {
+            transform: translateY(-150%);
+            opacity: 0;
+        }
+        h1 { margin: 0; font-size: 32px; color: var(--primary); text-shadow: 2px 2px 4px #000; font-family: 'Courier New', Courier, monospace; letter-spacing: -1px; font-weight: 900; }
+        .subtitle { font-size: 14px; color: #bdc3c7; font-style: italic; opacity: 0.9; margin-top: -5px; text-shadow: 1px 1px 2px #000; }
         
         /* Main Layout */
-        #game-layout {
+        #game-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
             display: flex;
-            flex-direction: column;
-            gap: 10px;
             align-items: center;
+            justify-content: center;
         }
 
+        /* The scalable container */
         #game-container {
             position: relative;
-            display: inline-block;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            width: 800px;
+            height: 550px;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
             border: 4px solid #34495e;
             border-radius: 12px;
             background: #000;
             overflow: hidden;
-            width: 800px;
-            height: 550px;
+            /* Transform origin for scaling */
+            transform-origin: center center;
         }
+        
         canvas {
             background-color: #333;
             display: block;
-            cursor: crosshair;
+            width: 100%;
+            height: 100%;
         }
         
-        /* --- UI BARS --- */
+        /* --- UI OVERLAYS --- */
         
-        /* Top Stats & Controls Bar */
+        /* Top Stats & Controls Bar - Now Inside Container */
         #stats-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            width: 800px;
-            background: rgba(0,0,0,0.3);
-            padding: 8px 15px;
-            border-radius: 12px;
-            box-sizing: border-box;
+            padding: 8px 12px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 70%, transparent 100%);
+            z-index: 10;
+            pointer-events: none; /* Let clicks pass through empty spaces */
         }
+        #stats-bar > * { pointer-events: auto; }
 
         .stats-group {
             display: flex;
-            gap: 15px;
+            gap: 8px;
         }
 
         .stat-pill {
             background: rgba(0,0,0,0.6);
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 16px;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 14px;
             font-weight: bold;
             display: flex;
             align-items: center;
-            gap: 8px;
-            border: 1px solid rgba(255,255,255,0.1);
-            min-width: 80px;
+            gap: 6px;
+            border: 1px solid rgba(255,255,255,0.15);
+            backdrop-filter: blur(2px);
         }
 
         .controls-group {
             display: flex;
-            gap: 8px;
+            gap: 6px;
         }
         
-        /* Bottom Tower Shop */
+        /* Bottom Tower Shop - Now Inside Container */
         #tower-shop {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
             display: flex;
             justify-content: center;
-            gap: 10px;
-            width: 800px;
-            background: rgba(0,0,0,0.3);
-            padding: 10px;
-            border-radius: 12px;
+            gap: 8px;
+            padding: 10px 10px 15px 10px;
+            background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.7) 60%, transparent 100%);
+            z-index: 10;
         }
         
         /* Buttons */
@@ -126,48 +151,47 @@
             border-radius: 8px;
             color: white;
             font-weight: bold;
-            font-size: 12px;
+            font-size: 11px;
             cursor: pointer;
-            box-shadow: 0 4px 0 #151e26;
+            box-shadow: 0 2px 0 #151e26;
             transition: all 0.1s;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 8px 12px;
-            min-width: 60px;
+            padding: 6px 8px;
+            min-width: 55px;
             position: relative;
         }
-        .btn:hover { background: #34495e; transform: translateY(-1px); }
-        .btn:active { transform: translateY(4px); box-shadow: 0 0 0 transparent; }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); transform: none; box-shadow: none; }
-        .btn.selected { background: var(--primary); border-color: #2ecc71; box-shadow: 0 4px 0 #1e8449; }
+        .btn:active { transform: translateY(2px); box-shadow: 0 0 0 transparent; }
+        .btn:disabled { opacity: 0.5; filter: grayscale(1); transform: none; box-shadow: none; }
+        .btn.selected { background: var(--primary); border-color: #2ecc71; box-shadow: 0 2px 0 #1e8449; }
         
-        .btn-icon { font-size: 22px; margin-bottom: 4px; line-height: 1; }
-        .btn small { font-size: 10px; opacity: 0.9; font-weight: normal; }
+        .btn-icon { font-size: 20px; margin-bottom: 2px; line-height: 1; }
+        .btn small { font-size: 9px; opacity: 0.9; font-weight: normal; }
 
         /* Tower Shop Specifics */
-        .shop-btn { min-width: 90px; height: 65px; }
+        .shop-btn { min-width: 80px; height: 60px; background: rgba(44, 62, 80, 0.9); }
 
         /* Upgrade Panel */
         #upgrade-panel {
             position: absolute;
-            bottom: 20px;
-            right: 20px;
+            bottom: 80px; /* Above shop */
+            right: 10px;
             background: var(--panel-bg);
             padding: 0;
             border-radius: 12px;
             border: 2px solid var(--accent);
             display: flex;
             flex-direction: column;
-            width: 260px;
+            width: 240px;
             text-align: left;
             z-index: 20;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.8);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.8);
             backdrop-filter: blur(5px);
             overflow: hidden;
-            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             transform-origin: bottom right;
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         #upgrade-panel.hidden {
             transform: scale(0);
@@ -176,94 +200,94 @@
 
         .panel-header {
             background: rgba(255,255,255,0.05);
-            padding: 10px 15px;
+            padding: 8px 12px;
             border-bottom: 1px solid rgba(255,255,255,0.1);
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        .panel-header h3 { margin: 0; color: var(--accent); font-size: 16px; }
+        .panel-header h3 { margin: 0; color: var(--accent); font-size: 14px; }
 
         .close-btn {
             background: #e74c3c;
             color: white;
             border: none;
-            width: 24px;
-            height: 24px;
+            width: 22px;
+            height: 22px;
             border-radius: 50%;
             font-weight: bold;
-            font-size: 16px;
+            font-size: 14px;
             cursor: pointer;
-            line-height: 24px;
-            text-align: center;
-            padding: 0;
             display: flex;
             align-items: center;
             justify-content: center;
         }
-        .close-btn:hover { background: #c0392b; transform: scale(1.1); }
 
-        .panel-body { padding: 15px; display: flex; flex-direction: column; gap: 8px; }
+        .panel-body { padding: 10px; display: flex; flex-direction: column; gap: 6px; }
 
         .upgrade-row {
-            background: #34495e;
+            background: rgba(255,255,255,0.05);
             color: white;
             border: 1px solid #465c71;
-            padding: 12px;
-            border-radius: 8px;
+            padding: 10px;
+            border-radius: 6px;
             cursor: pointer;
-            font-size: 13px;
+            font-size: 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: background 0.2s;
-            user-select: none;
+            transition: background 0.1s;
         }
-        .upgrade-row:hover { background: #2c3e50; border-color: var(--accent); }
-        .upgrade-row:active { transform: translateY(2px); }
+        .upgrade-row:active { background: rgba(255,255,255,0.1); }
         .upgrade-row span:last-child { color: var(--accent); font-weight: bold; }
         
         .target-btn {
             background: #2980b9;
             justify-content: center;
             border-color: #3498db;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
         }
-        .target-btn:hover { background: #1f618d; }
 
         .sell-btn {
-            margin-top: 10px;
+            margin-top: 5px;
             border-color: #c0392b;
             color: #e74c3c;
             background: rgba(192, 57, 43, 0.1);
         }
-        .sell-btn:hover { background: rgba(192, 57, 43, 0.3); }
 
         /* Screens */
         .screen {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(20, 20, 20, 0.95);
+            background: rgba(26, 37, 47, 0.98);
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            z-index: 30;
+            z-index: 60;
             color: white;
             opacity: 1;
             transition: opacity 0.3s;
+            padding: 20px;
         }
         .screen.hidden { opacity: 0; pointer-events: none; }
-        .screen h2 { font-size: 48px; color: var(--accent); margin-bottom: 10px; font-family: 'Courier New', monospace; }
-        .screen p { font-size: 18px; color: #bdc3c7; max-width: 500px; line-height: 1.6; margin-bottom: 30px; }
+        .screen h2 { font-size: 42px; color: var(--accent); margin-bottom: 10px; font-family: 'Courier New', monospace; text-align: center; }
+        .screen p { font-size: 16px; color: #bdc3c7; max-width: 600px; line-height: 1.5; margin-bottom: 25px; text-align: center; }
         
+        .map-selector {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
         .map-card {
             display: flex;
             flex-direction: column;
-            width: 140px;
-            height: 120px;
+            width: 130px;
+            height: 110px;
             border: 3px solid #555;
-            margin: 10px;
             cursor: pointer;
             position: relative;
             background: #34495e;
@@ -273,12 +297,13 @@
             align-items: center;
             justify-content: center;
         }
-        .map-card:hover, .map-card.selected { transform: scale(1.05); border-color: var(--primary); }
-        .map-card .icon { font-size: 40px; margin-bottom: 10px; }
-        .map-card span { font-size: 14px; font-weight: bold; padding: 5px; width: 100%; background: rgba(0,0,0,0.3); }
+        .map-card:hover { transform: scale(1.05); }
+        .map-card.selected { border-color: var(--primary); box-shadow: 0 0 15px var(--primary); transform: scale(1.05); }
+        .map-card .icon { font-size: 36px; margin-bottom: 8px; }
+        .map-card span { font-size: 13px; font-weight: bold; padding: 4px; width: 100%; background: rgba(0,0,0,0.4); }
 
         .big-btn {
-            padding: 15px 40px;
+            padding: 12px 30px;
             font-size: 20px;
             background: var(--primary);
             border: none;
@@ -289,12 +314,12 @@
             box-shadow: 0 5px 15px rgba(39, 174, 96, 0.4);
             transition: transform 0.1s;
         }
-        .big-btn:hover { transform: scale(1.05); background: #2ecc71; }
+        .big-btn:active { transform: scale(0.95); }
         
-        /* Notifications Container */
+        /* Notifications */
         #notification-area {
             position: absolute;
-            top: 70px;
+            top: 60px;
             left: 50%;
             transform: translateX(-50%);
             width: 300px;
@@ -309,28 +334,30 @@
         .toast {
             background: rgba(0,0,0,0.85);
             color: var(--accent);
-            padding: 8px 16px;
+            padding: 6px 14px;
             border-radius: 20px;
             font-weight: bold;
-            font-size: 16px;
+            font-size: 14px;
             border: 1px solid var(--accent);
-            animation: fadeIn 0.2s forwards;
+            animation: floatUp 2s forwards;
             white-space: nowrap;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
         }
         
         /* Boss Bar */
         #boss-bar-container {
             position: absolute;
-            top: 10px;
+            top: 15px; /* Pushed down slightly */
             left: 50%;
             transform: translateX(-50%);
-            width: 400px;
-            height: 30px;
+            width: 50%;
+            max-width: 300px;
+            height: 24px;
             background: rgba(0,0,0,0.7);
             border: 2px solid #c0392b;
             border-radius: 15px;
             overflow: hidden;
-            display: none; /* Hidden by default */
+            display: none;
             z-index: 90;
         }
         #boss-bar-fill {
@@ -343,57 +370,58 @@
             position: absolute;
             width: 100%;
             text-align: center;
-            top: 4px;
+            top: 2px;
             font-weight: bold;
-            font-size: 14px;
+            font-size: 11px;
             text-shadow: 1px 1px 2px black;
             color: white;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        @keyframes floatUp {
+            0% { opacity: 0; transform: translateY(10px); }
+            10% { opacity: 1; transform: translateY(0); }
+            90% { opacity: 1; transform: translateY(-5px); }
+            100% { opacity: 0; transform: translateY(-15px); }
         }
     </style>
 </head>
 <body>
 
-    <header>
+    <header id="main-header">
         <h1>🐢 Beau's Shell-No! 🐢</h1>
+        <div class="subtitle">The Slow & The Spurious</div>
     </header>
 
-    <div id="game-layout">
-        
-        <!-- TOP STATS BAR -->
-        <div id="stats-bar">
-            <div class="stats-group">
-                <div class="stat-pill" style="color: #e74c3c; border-color: #c0392b;">❤️ <span id="lives">20</span></div>
-                <div class="stat-pill" style="color: #f1c40f; border-color: #f39c12;">🍕 <span id="money">100</span></div>
-                <div class="stat-pill" style="color: #3498db; border-color: #2980b9;">🌊 <span id="level">1</span></div>
-            </div>
-            
-            <div class="controls-group">
-                <button class="btn" onclick="toggleAutoStart()" id="btn-autostart" title="Auto Start Waves">
-                    <span class="btn-icon">🔁</span>
-                    <small>AUTO</small>
-                </button>
-                <button class="btn" onclick="toggleSpeed()" id="btn-speed" title="Fast Forward">
-                    <span class="btn-icon">⏩</span>
-                    <small>TURBO</small>
-                </button>
-                <button class="btn" onclick="buyLife()" title="Buy Life ($150)">
-                    <span class="btn-icon">💊</span>
-                    <small>HEAL</small>
-                </button>
-                <button class="btn" onclick="togglePause()" title="Pause Game">
-                    <span class="btn-icon">⏸️</span>
-                    <small>MENU</small>
-                </button>
-            </div>
-        </div>
-
-        <!-- MAIN GAME CANVAS WRAPPER -->
+    <div id="game-wrapper">
+        <!-- The Scalable Container -->
         <div id="game-container">
+            
+            <!-- TOP STATS BAR OVERLAY -->
+            <div id="stats-bar">
+                <div class="stats-group">
+                    <div class="stat-pill" style="color: #e74c3c; border-color: #c0392b;">❤️ <span id="lives">20</span></div>
+                    <div class="stat-pill" style="color: #f1c40f; border-color: #f39c12;">🍕 <span id="money">450</span></div>
+                    <div class="stat-pill" style="color: #3498db; border-color: #2980b9;">🌊 <span id="level">1</span></div>
+                </div>
+                
+                <div class="controls-group">
+                    <button class="btn" onclick="toggleAutoStart()" id="btn-autostart" title="Auto Start Waves">
+                        <span class="btn-icon">🔁</span>
+                    </button>
+                    <button class="btn" onclick="toggleSpeed()" id="btn-speed" title="Fast Forward">
+                        <span class="btn-icon">⏩</span>
+                    </button>
+                    <button class="btn" onclick="buyLife()" title="Buy Life">
+                        <span class="btn-icon">💊</span>
+                    </button>
+                    <button class="btn" onclick="togglePause()" title="Menu">
+                        <span class="btn-icon">⏸️</span>
+                    </button>
+                </div>
+            </div>
+
             <canvas id="gameCanvas" width="800" height="550"></canvas>
             
             <!-- Notification Area -->
@@ -405,13 +433,55 @@
                 <div id="boss-bar-label">THE BOSS</div>
             </div>
 
+            <!-- UPGRADE PANEL -->
+            <div id="upgrade-panel" class="hidden" onclick="event.stopPropagation()">
+                <div class="panel-header">
+                    <h3>Upgrades</h3>
+                    <button class="close-btn" onclick="closeUpgradePanel(event)">×</button>
+                </div>
+                <div class="panel-body">
+                    <div class="upgrade-row target-btn" onclick="toggleTowerTargeting()">
+                        🎯 Target: <span id="target-mode" style="color:white; margin-left:5px">FIRST</span>
+                    </div>
+                    <div id="upgrade-content"></div>
+                    <div class="upgrade-row sell-btn" onclick="sellTower()">
+                        <span>♻️ Sell Tower</span>
+                        <span>+$<span id="sell-val">0</span></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TOWER SHOP OVERLAY -->
+            <div id="tower-shop">
+                <button class="btn shop-btn" id="buy-1" onclick="selectTower(1)">
+                    <span class="btn-icon">🐢</span>
+                    Rifle<small>$50</small>
+                </button>
+                <button class="btn shop-btn" id="buy-2" onclick="selectTower(2)">
+                    <span class="btn-icon">🔭</span>
+                    Sniper<small>$120</small>
+                </button>
+                <button class="btn shop-btn" id="buy-3" onclick="selectTower(3)">
+                    <span class="btn-icon">🐌</span>
+                    Alch<small>$200</small>
+                </button>
+                <button class="btn shop-btn" id="buy-4" onclick="selectTower(4)">
+                    <span class="btn-icon">💣</span>
+                    Arty<small>$350</small>
+                </button>
+                <button class="btn shop-btn" id="buy-5" onclick="selectTower(5)">
+                    <span class="btn-icon">🥷</span>
+                    Ninja<small>$500</small>
+                </button>
+            </div>
+
             <!-- VILLAGE / MENU SCREEN -->
             <div id="screen-village" class="screen">
                 <h2>The Hare Force Invasion</h2>
                 <p><b>General Jackrabbit</b> has deployed his legions!<br>
                    Beware the <b style="color:#e74c3c">Tanks</b> (Immune to sharp) and <b style="color:#f1c40f">Air Support</b>!<br>
                    Deploy the Turtle Squad to defend the realm.</p>
-                <div style="display: flex; gap: 20px; margin-bottom: 30px;">
+                <div class="map-selector">
                     <div class="map-card selected" onclick="selectMap(0, this)">
                         <div class="icon">🏖️</div>
                         <span>Shoreline Def</span>
@@ -444,60 +514,57 @@
                 <button class="big-btn" onclick="returnToVillage()">Regroup</button>
             </div>
 
-            <!-- UPGRADE PANEL -->
-            <!-- Note: onclick logic for rows is now handled in JS render -->
-            <div id="upgrade-panel" class="hidden" onclick="event.stopPropagation()">
-                <div class="panel-header">
-                    <h3>Upgrades</h3>
-                    <button class="close-btn" onclick="closeUpgradePanel(event)">×</button>
-                </div>
-                <div class="panel-body">
-                    <div class="upgrade-row target-btn" onclick="toggleTowerTargeting()">
-                        🎯 Target: <span id="target-mode" style="color:white; margin-left:5px">FIRST</span>
-                    </div>
-                    <div id="upgrade-content"></div>
-                    <div class="upgrade-row sell-btn" onclick="sellTower()">
-                        <span>♻️ Sell Tower</span>
-                        <span>+$<span id="sell-val">0</span></span>
-                    </div>
-                </div>
-            </div>
         </div>
-
-        <!-- TOWER SHOP -->
-        <div id="tower-shop">
-            <button class="btn shop-btn" id="buy-1" onclick="selectTower(1)">
-                <span class="btn-icon">🐢</span>
-                Rifle-Shell<small>$50</small>
-            </button>
-            <button class="btn shop-btn" id="buy-2" onclick="selectTower(2)">
-                <span class="btn-icon">🔭</span>
-                Sniper<small>$120</small>
-            </button>
-            <button class="btn shop-btn" id="buy-3" onclick="selectTower(3)">
-                <span class="btn-icon">🐌</span>
-                Alchemist<small>$200</small>
-            </button>
-            <button class="btn shop-btn" id="buy-4" onclick="selectTower(4)">
-                <span class="btn-icon">💣</span>
-                Shell-tillery<small>$350</small>
-            </button>
-            <button class="btn shop-btn" id="buy-5" onclick="selectTower(5)">
-                <span class="btn-icon">🥷</span>
-                Shinobi<small>$500</small>
-            </button>
-        </div>
-
     </div>
 
 <script>
 /**
  * SHELL-NO! TOWER DEFENSE
- * The Slow & The Spurious
+ * Responsive Mobile Update
  */
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+
+// --- Responsive Engine ---
+function resizeGame() {
+    const container = document.getElementById('game-container');
+    const wrapper = document.getElementById('game-wrapper');
+    
+    // Available space (minus padding/margins)
+    const maxWidth = window.innerWidth - 20; 
+    const maxHeight = window.innerHeight - 20;
+    
+    const baseWidth = 800;
+    const baseHeight = 550;
+    
+    // Determine scale based on the most constrained dimension
+    const scaleX = maxWidth / baseWidth;
+    const scaleY = maxHeight / baseHeight;
+    const scale = Math.min(scaleX, scaleY, 1.2); // Cap scale at 1.2x to prevent blur
+    
+    container.style.transform = `scale(${scale})`;
+}
+
+// Attach listeners for resize
+window.addEventListener('resize', resizeGame);
+window.addEventListener('load', resizeGame);
+
+// Improved Input Mapping for scaled content
+function getMousePos(evt) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    
+    // Handle Touch vs Mouse
+    const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
+    const clientY = evt.touches ? evt.touches[0].clientY : evt.clientY;
+
+    return {
+        x: (clientX - rect.left) * scaleX,
+        y: (clientY - rect.top) * scaleY
+    };
+}
 
 // --- Configuration ---
 // Damage Types: 'sharp', 'crush', 'chem', 'explosive'
@@ -570,12 +637,13 @@ function init() {
     // Service Worker Registration
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js');
+            navigator.serviceWorker.register('sw.js').catch(err => console.log('SW fail', err));
         });
     }
     
     switchScreen('screen-village');
     loop();
+    resizeGame(); // Initial scale check
 }
 
 function selectMap(index, el) {
@@ -586,6 +654,7 @@ function selectMap(index, el) {
 
 function startGame() {
     gameState = 'PLAYING';
+    document.getElementById('main-header').classList.add('collapsed');
     switchScreen(null);
     resetGame();
     startWave();
@@ -692,7 +761,6 @@ function update() {
         towers.forEach(t => t.update());
         
         // Update Enemies
-        // We iterate backwards to safely remove
         for (let i = enemies.length - 1; i >= 0; i--) {
             enemies[i].update();
             if (enemies[i].dead) {
@@ -926,8 +994,6 @@ class Tower {
         this.cooldown = 0;
         this.rotation = 0;
         this.targetAngle = 0;
-        
-        // Targeting Priorities: 'first', 'last', 'strong', 'close'
         this.targeting = 'first'; 
 
         // Upgrades
@@ -939,32 +1005,24 @@ class Tower {
     update() {
         if (this.cooldown > 0) this.cooldown--;
         
-        // Filter candidates
         let candidates = enemies.filter(e => {
             return Math.hypot(e.x - this.x, e.y - this.y) <= this.range;
         });
 
         if (candidates.length === 0) return;
 
-        // Sorting Logic based on Priority
-        if (this.targeting === 'first') {
-            candidates.sort((a, b) => b.pathIndex - a.pathIndex);
-        } else if (this.targeting === 'last') {
-            candidates.sort((a, b) => a.pathIndex - b.pathIndex);
-        } else if (this.targeting === 'strong') {
-            candidates.sort((a, b) => b.hp - a.hp);
-        } else if (this.targeting === 'close') {
+        if (this.targeting === 'first') candidates.sort((a, b) => b.pathIndex - a.pathIndex);
+        else if (this.targeting === 'last') candidates.sort((a, b) => a.pathIndex - b.pathIndex);
+        else if (this.targeting === 'strong') candidates.sort((a, b) => b.hp - a.hp);
+        else if (this.targeting === 'close') {
             candidates.sort((a, b) => {
-                const distA = Math.hypot(a.x - this.x, a.y - this.y);
-                const distB = Math.hypot(b.x - this.x, b.y - this.y);
-                return distA - distB;
+                return Math.hypot(a.x - this.x, a.y - this.y) - Math.hypot(b.x - this.x, b.y - this.y);
             });
         }
 
         let target = candidates[0];
 
         if (target) {
-            // Calculate angle for facing
             this.targetAngle = Math.atan2(target.y - this.y, target.x - this.x);
             
             if (this.cooldown <= 0) {
@@ -986,22 +1044,16 @@ class Tower {
     draw(ctx) {
         ctx.save();
         ctx.translate(this.x, this.y);
-        
-        // Base Shadow
         ctx.fillStyle = 'rgba(0,0,0,0.3)';
         ctx.beginPath(); ctx.ellipse(0, 15, 15, 8, 0, 0, Math.PI*2); ctx.fill();
 
-        // Flip logic (Scale X)
-        if (Math.abs(this.targetAngle) > Math.PI/2) {
-             ctx.scale(-1, 1);
-        }
+        if (Math.abs(this.targetAngle) > Math.PI/2) ctx.scale(-1, 1);
 
         ctx.font = '40px Arial';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(this.emoji, 0, 0);
         
-        // Level Badges
         if (this.lvlDmg > 0) {
             ctx.fillStyle = '#f1c40f';
             ctx.beginPath(); ctx.arc(15, -15, 5, 0, Math.PI*2); ctx.fill();
@@ -1010,7 +1062,6 @@ class Tower {
             ctx.fillStyle = '#3498db';
             ctx.beginPath(); ctx.arc(-15, -15, 5, 0, Math.PI*2); ctx.fill();
         }
-
         ctx.restore();
     }
 }
@@ -1024,16 +1075,11 @@ class Enemy {
         this.y = path[0].y;
         this.dead = false;
         this.reachedEnd = false;
-        
-        // Properties
         this.isTank = false; 
-        
-        // Status Effects
         this.slowTimer = 0;
         this.wobble = Math.random() * 10;
-        this.facing = 1; // 1 or -1
+        this.facing = 1;
 
-        // Stats
         const multi = 1 + (level * 0.2);
 
         if (type === 'recruit') {
@@ -1058,7 +1104,6 @@ class Enemy {
             if (Math.random() < 0.1) particles.push(new Particle(this.x, this.y, '#3498db', 10));
         }
 
-        // Move
         const target = this.path[this.pathIndex + 1];
         if (!target) {
             this.reachedEnd = true;
@@ -1069,7 +1114,6 @@ class Enemy {
         const dy = target.y - this.y;
         const dist = Math.hypot(dx, dy);
 
-        // Determine facing
         if (dx < -0.1) this.facing = -1;
         else if (dx > 0.1) this.facing = 1;
 
@@ -1081,7 +1125,6 @@ class Enemy {
             this.x += (dx/dist) * currentSpeed;
             this.y += (dy/dist) * currentSpeed;
         }
-        
         this.wobble += 0.2;
     }
 
@@ -1097,8 +1140,6 @@ class Enemy {
         if (this.hp <= 0) {
             this.dead = true;
             money += this.reward;
-            
-            // Death Poof
             const color = this.type === 'tank' ? '#555' : '#ecf0f1';
             for(let i=0; i<5; i++) particles.push(new Particle(this.x, this.y, color));
         }
@@ -1107,14 +1148,8 @@ class Enemy {
     draw(ctx) {
         ctx.save();
         ctx.translate(this.x, this.y);
-        
-        // Sprite Scale (Boss is big)
         const scale = this.type === 'general' ? 2 : 1.2;
-        
-        // Flip smoothly
         ctx.scale(this.facing * scale, scale);
-
-        // Hop effect
         const hop = Math.abs(Math.sin(this.wobble)) * 5;
         ctx.translate(0, -hop);
         
@@ -1122,21 +1157,19 @@ class Enemy {
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         
-        // Draw Shadow
+        // Shadow
         ctx.save();
         ctx.scale(1, 0.3);
         ctx.fillStyle = 'rgba(0,0,0,0.2)';
         ctx.beginPath(); ctx.arc(0, 40, 10, 0, Math.PI*2); ctx.fill();
         ctx.restore();
 
-        // Slow effect tint (circle behind)
         if (this.slowTimer > 0) {
             ctx.fillStyle = 'rgba(52, 152, 219, 0.5)';
             ctx.beginPath(); ctx.arc(0,0,15,0,Math.PI*2); ctx.fill();
         }
 
         ctx.fillText(this.emoji, 0, 0);
-
         ctx.restore();
     }
 }
@@ -1180,13 +1213,10 @@ class Projectile {
     hit() {
         this.active = false;
         if (this.type === 'bomb') {
-             // Splash
             enemies.forEach(e => {
-                if (Math.hypot(e.x - this.x, e.y - this.y) < 80) {
-                    e.takeDamage(this.damage, this.dmgType);
-                }
+                if (Math.hypot(e.x - this.x, e.y - this.y) < 80) e.takeDamage(this.damage, this.dmgType);
             });
-            particles.push(new Particle(this.x, this.y, '#e74c3c', 20)); // Explosion
+            particles.push(new Particle(this.x, this.y, '#e74c3c', 20));
         } else {
             this.target.takeDamage(this.damage, this.dmgType);
             if (this.isCrit) addFloatText("CRIT!", this.x, this.y - 20, '#e74c3c');
@@ -1201,7 +1231,7 @@ class Projectile {
         if (this.type === 'bomb') {
             ctx.font = '16px Arial'; ctx.fillText('💣', -8, 4);
         } else if (this.type === 'star') {
-            ctx.rotate(frames * 0.5); // Spin shuriken
+            ctx.rotate(frames * 0.5); 
             ctx.font = '16px Arial'; ctx.fillText('⭐', -8, 4);
         } else {
             ctx.beginPath(); ctx.arc(0,0,4,0,Math.PI*2); ctx.fill();
@@ -1260,29 +1290,42 @@ class FloatingText {
 
 // --- Inputs & Logic ---
 
-canvas.addEventListener('mousemove', e => {
-    const rect = canvas.getBoundingClientRect();
-    mouseX = e.clientX - rect.left;
-    mouseY = e.clientY - rect.top;
-});
-
-canvas.addEventListener('mousedown', e => {
+// Updated to use the smart coordinate mapper
+function handleInput(e) {
     if (gameState !== 'PLAYING') return;
+    
+    // Prevent default touch actions (like scrolling) inside game
+    // e.preventDefault(); // Optional: careful with blocking UI interaction
 
-    if (selectedTowerType) {
-        if (money >= TOWER_TYPES[selectedTowerType].cost && isValidPlacement(mouseX, mouseY)) {
-            money -= TOWER_TYPES[selectedTowerType].cost;
-            towers.push(new Tower(mouseX, mouseY, selectedTowerType));
-            for(let i=0; i<8; i++) particles.push(new Particle(mouseX, mouseY, '#f1c40f'));
-            selectedTowerType = null; 
-            updateUI();
+    const pos = getMousePos(e);
+    mouseX = pos.x;
+    mouseY = pos.y;
+
+    if (e.type === 'mousedown' || e.type === 'touchstart') {
+        if (selectedTowerType) {
+            if (money >= TOWER_TYPES[selectedTowerType].cost && isValidPlacement(mouseX, mouseY)) {
+                money -= TOWER_TYPES[selectedTowerType].cost;
+                towers.push(new Tower(mouseX, mouseY, selectedTowerType));
+                for(let i=0; i<8; i++) particles.push(new Particle(mouseX, mouseY, '#f1c40f'));
+                selectedTowerType = null; 
+                updateUI();
+            }
+        } else {
+            const clicked = towers.find(t => Math.hypot(t.x - mouseX, t.y - mouseY) < 30);
+            if (clicked) openUpgradePanel(clicked);
+            else closeUpgradePanel();
         }
-    } else {
-        const clicked = towers.find(t => Math.hypot(t.x - mouseX, t.y - mouseY) < 30);
-        if (clicked) openUpgradePanel(clicked);
-        else closeUpgradePanel();
     }
+}
+
+// Add listeners to Canvas only
+canvas.addEventListener('mousemove', e => {
+    const pos = getMousePos(e);
+    mouseX = pos.x;
+    mouseY = pos.y;
 });
+canvas.addEventListener('mousedown', handleInput);
+canvas.addEventListener('touchstart', handleInput, {passive: false});
 
 canvas.addEventListener('contextmenu', e => {
     e.preventDefault();
@@ -1292,14 +1335,10 @@ canvas.addEventListener('contextmenu', e => {
 
 function isValidPlacement(x, y) {
     if (x < 30 || x > canvas.width - 30 || y < 30 || y > canvas.height - 30) return false;
-    
-    // Path Check
     const path = MAPS[currentMapIndex].path;
     for(let i=0; i<path.length-1; i++) {
         if (pointLineDist(x, y, path[i].x, path[i].y, path[i+1].x, path[i+1].y) < 50) return false;
     }
-    
-    // Tower Overlap
     for(let t of towers) {
         if (Math.hypot(t.x - x, t.y - y) < 45) return false;
     }
@@ -1314,18 +1353,7 @@ function showToast(msg) {
     div.className = 'toast';
     div.innerText = msg;
     container.appendChild(div);
-    
-    // Remove after delay
-    setTimeout(() => {
-        div.style.opacity = 0;
-        div.style.transform = 'translateY(-10px)';
-        setTimeout(() => { if(div.parentElement) div.remove(); }, 200);
-    }, 2000);
-
-    // Limit visible toasts
-    if (container.children.length > 5) {
-        container.removeChild(container.firstChild);
-    }
+    setTimeout(() => { if(div.parentElement) div.remove(); }, 2000);
 }
 
 function clearToasts() {
@@ -1388,7 +1416,6 @@ function updateUI() {
     
     if (selectedTowerInstance) renderUpgrades();
 
-    // Update Boss Bar
     if (activeBoss) {
         const pct = Math.max(0, (activeBoss.hp / activeBoss.maxHp) * 100);
         document.getElementById('boss-bar-fill').style.width = pct + '%';
@@ -1411,12 +1438,10 @@ function closeUpgradePanel(e) {
 
 function toggleTowerTargeting() {
     if (!selectedTowerInstance) return;
-    
     const modes = ['first', 'last', 'strong', 'close'];
     let idx = modes.indexOf(selectedTowerInstance.targeting);
     idx = (idx + 1) % modes.length;
     selectedTowerInstance.targeting = modes[idx];
-    
     renderUpgrades();
 }
 
@@ -1425,16 +1450,13 @@ function renderUpgrades() {
     const t = selectedTowerInstance;
     const div = document.getElementById('upgrade-content');
     
-    // Update Target Text
     document.getElementById('target-mode').innerText = t.targeting.toUpperCase();
     
-    // Calculate costs here, fresh every render
     const dCost = Math.floor(TOWER_TYPES[t.type].cost * 0.6 * (t.lvlDmg + 1));
     const sCost = Math.floor(TOWER_TYPES[t.type].cost * 0.6 * (t.lvlSpd + 1));
     
     document.getElementById('sell-val').innerText = Math.floor(t.spentValue * 0.75);
 
-    // Pass the type string, calculate cost in function for security/simplicity
     div.innerHTML = `
         <div class="upgrade-row" onclick="buyUpgrade('dmg')">
             <span>💪 Power (L${t.lvlDmg})</span>
@@ -1449,29 +1471,17 @@ function renderUpgrades() {
 
 function buyUpgrade(upgradeType) {
     if (!selectedTowerInstance) return;
-    
     const t = selectedTowerInstance;
     let cost = 0;
     
-    // Calculate cost again to be safe
-    if (upgradeType === 'dmg') {
-        cost = Math.floor(TOWER_TYPES[t.type].cost * 0.6 * (t.lvlDmg + 1));
-    } else {
-        cost = Math.floor(TOWER_TYPES[t.type].cost * 0.6 * (t.lvlSpd + 1));
-    }
+    if (upgradeType === 'dmg') cost = Math.floor(TOWER_TYPES[t.type].cost * 0.6 * (t.lvlDmg + 1));
+    else cost = Math.floor(TOWER_TYPES[t.type].cost * 0.6 * (t.lvlSpd + 1));
 
     if (money >= cost) {
         money -= cost;
         t.spentValue += cost;
-        
-        if (upgradeType === 'dmg') {
-            t.lvlDmg++;
-            t.damage *= 1.3;
-        } else {
-            t.lvlSpd++;
-            t.maxCooldown *= 0.8;
-        }
-        
+        if (upgradeType === 'dmg') { t.lvlDmg++; t.damage *= 1.3; }
+        else { t.lvlSpd++; t.maxCooldown *= 0.8; }
         addFloatText("UPGRADE!", t.x, t.y - 30, '#2ecc71');
         updateUI();
     } else {
@@ -1496,6 +1506,8 @@ function buyLife() {
         repairCost = Math.floor(repairCost * 1.5);
         showToast("Shell Patched!");
         updateUI();
+    } else {
+        showToast("Need Cash!");
     }
 }
 
@@ -1508,6 +1520,7 @@ function switchScreen(id) {
 
 function returnToVillage() {
     gameState = 'MENU';
+    document.getElementById('main-header').classList.remove('collapsed');
     switchScreen('screen-village');
     closeUpgradePanel();
 }
