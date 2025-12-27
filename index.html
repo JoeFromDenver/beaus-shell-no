@@ -10,6 +10,8 @@
     <meta name="theme-color" content="#27ae60">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Turtle Favicon (Data URI) -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐢</text></svg>">
     <link rel="apple-touch-icon" href="icon-192.png">
 
     <style>
@@ -33,12 +35,15 @@
             padding: 0;
             overflow: hidden;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
             height: 100vh;
             width: 100vw;
             user-select: none;
+            /* Cool background pattern to fill empty space */
+            background-image: radial-gradient(#2c3e50 15%, transparent 16%), radial-gradient(#2c3e50 15%, transparent 16%);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
         }
         
         /* Header - Collapsible */
@@ -49,14 +54,15 @@
             width: 100%;
             z-index: 50;
             transition: transform 0.5s ease-in-out, opacity 0.5s;
-            pointer-events: none; /* Let clicks pass through */
+            pointer-events: none;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.8);
         }
         header.collapsed {
-            transform: translateY(-150%);
+            transform: translateY(-200%);
             opacity: 0;
         }
-        h1 { margin: 0; font-size: 32px; color: var(--primary); text-shadow: 2px 2px 4px #000; font-family: 'Courier New', Courier, monospace; letter-spacing: -1px; font-weight: 900; }
-        .subtitle { font-size: 14px; color: #bdc3c7; font-style: italic; opacity: 0.9; margin-top: -5px; text-shadow: 1px 1px 2px #000; }
+        h1 { margin: 0; font-size: 32px; color: var(--primary); font-family: 'Courier New', Courier, monospace; letter-spacing: -1px; font-weight: 900; }
+        .subtitle { font-size: 14px; color: #ecf0f1; font-style: italic; margin-top: -5px; }
         
         /* Main Layout */
         #game-wrapper {
@@ -73,13 +79,13 @@
             position: relative;
             width: 800px;
             height: 550px;
-            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
             border: 4px solid #34495e;
             border-radius: 12px;
             background: #000;
             overflow: hidden;
-            /* Transform origin for scaling */
             transform-origin: center center;
+            transition: transform 0.3s ease;
         }
         
         canvas {
@@ -91,292 +97,143 @@
         
         /* --- UI OVERLAYS --- */
         
-        /* Top Stats & Controls Bar - Now Inside Container */
         #stats-bar {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            top: 0; left: 0; width: 100%;
+            display: flex; justify-content: space-between; align-items: center;
             padding: 8px 12px;
             background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 70%, transparent 100%);
             z-index: 10;
-            pointer-events: none; /* Let clicks pass through empty spaces */
+            pointer-events: none;
         }
         #stats-bar > * { pointer-events: auto; }
 
-        .stats-group {
-            display: flex;
-            gap: 8px;
-        }
-
+        .stats-group { display: flex; gap: 8px; }
         .stat-pill {
-            background: rgba(0,0,0,0.6);
-            padding: 4px 10px;
-            border-radius: 15px;
-            font-size: 14px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            border: 1px solid rgba(255,255,255,0.15);
-            backdrop-filter: blur(2px);
+            background: rgba(0,0,0,0.6); padding: 4px 10px; border-radius: 15px;
+            font-size: 14px; font-weight: bold; display: flex; align-items: center; gap: 6px;
+            border: 1px solid rgba(255,255,255,0.15); backdrop-filter: blur(2px);
         }
-
-        .controls-group {
-            display: flex;
-            gap: 6px;
-        }
+        .controls-group { display: flex; gap: 6px; }
         
-        /* Bottom Tower Shop - Now Inside Container */
         #tower-shop {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            gap: 8px;
+            position: absolute; bottom: 0; left: 0; width: 100%;
+            display: flex; justify-content: center; gap: 8px;
             padding: 10px 10px 15px 10px;
             background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.7) 60%, transparent 100%);
             z-index: 10;
         }
         
-        /* Buttons */
         .btn {
-            background: var(--dark);
-            border: 1px solid #7f8c8d;
-            border-radius: 8px;
-            color: white;
-            font-weight: bold;
-            font-size: 11px;
-            cursor: pointer;
-            box-shadow: 0 2px 0 #151e26;
-            transition: all 0.1s;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 6px 8px;
-            min-width: 55px;
-            position: relative;
+            background: var(--dark); border: 1px solid #7f8c8d; border-radius: 8px;
+            color: white; font-weight: bold; font-size: 11px; cursor: pointer;
+            box-shadow: 0 2px 0 #151e26; transition: all 0.1s;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 6px 8px; min-width: 55px; position: relative;
         }
         .btn:active { transform: translateY(2px); box-shadow: 0 0 0 transparent; }
         .btn:disabled { opacity: 0.5; filter: grayscale(1); transform: none; box-shadow: none; }
         .btn.selected { background: var(--primary); border-color: #2ecc71; box-shadow: 0 2px 0 #1e8449; }
-        
         .btn-icon { font-size: 20px; margin-bottom: 2px; line-height: 1; }
         .btn small { font-size: 9px; opacity: 0.9; font-weight: normal; }
-
-        /* Tower Shop Specifics */
         .shop-btn { min-width: 80px; height: 60px; background: rgba(44, 62, 80, 0.9); }
 
         /* Upgrade Panel */
         #upgrade-panel {
-            position: absolute;
-            bottom: 80px; /* Above shop */
-            right: 10px;
-            background: var(--panel-bg);
-            padding: 0;
-            border-radius: 12px;
-            border: 2px solid var(--accent);
-            display: flex;
-            flex-direction: column;
-            width: 240px;
-            text-align: left;
-            z-index: 20;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.8);
-            backdrop-filter: blur(5px);
-            overflow: hidden;
+            position: absolute; bottom: 80px; right: 10px;
+            background: var(--panel-bg); padding: 0;
+            border-radius: 12px; border: 2px solid var(--accent);
+            display: flex; flex-direction: column; width: 240px;
+            z-index: 20; box-shadow: 0 5px 20px rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px); overflow: hidden;
             transform-origin: bottom right;
             transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        #upgrade-panel.hidden {
-            transform: scale(0);
-            pointer-events: none;
-        }
-
+        #upgrade-panel.hidden { transform: scale(0); pointer-events: none; }
         .panel-header {
-            background: rgba(255,255,255,0.05);
-            padding: 8px 12px;
+            background: rgba(255,255,255,0.05); padding: 8px 12px;
             border-bottom: 1px solid rgba(255,255,255,0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            display: flex; justify-content: space-between; align-items: center;
         }
         .panel-header h3 { margin: 0; color: var(--accent); font-size: 14px; }
-
         .close-btn {
-            background: #e74c3c;
-            color: white;
-            border: none;
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            font-weight: bold;
-            font-size: 14px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            background: #e74c3c; color: white; border: none; width: 22px; height: 22px;
+            border-radius: 50%; font-weight: bold; font-size: 14px;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
         }
-
         .panel-body { padding: 10px; display: flex; flex-direction: column; gap: 6px; }
-
         .upgrade-row {
-            background: rgba(255,255,255,0.05);
-            color: white;
-            border: 1px solid #465c71;
-            padding: 10px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: background 0.1s;
+            background: rgba(255,255,255,0.05); color: white;
+            border: 1px solid #465c71; padding: 10px; border-radius: 6px;
+            cursor: pointer; font-size: 12px; display: flex; justify-content: space-between;
+            align-items: center; transition: background 0.1s;
         }
         .upgrade-row:active { background: rgba(255,255,255,0.1); }
         .upgrade-row span:last-child { color: var(--accent); font-weight: bold; }
-        
-        .target-btn {
-            background: #2980b9;
-            justify-content: center;
-            border-color: #3498db;
-            margin-bottom: 4px;
-        }
-
-        .sell-btn {
-            margin-top: 5px;
-            border-color: #c0392b;
-            color: #e74c3c;
-            background: rgba(192, 57, 43, 0.1);
-        }
+        .target-btn { background: #2980b9; justify-content: center; border-color: #3498db; margin-bottom: 4px; }
+        .sell-btn { margin-top: 5px; border-color: #c0392b; color: #e74c3c; background: rgba(192, 57, 43, 0.1); }
 
         /* Screens */
         .screen {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(26, 37, 47, 0.98);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 60;
-            color: white;
-            opacity: 1;
-            transition: opacity 0.3s;
-            padding: 20px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 60; color: white; opacity: 1; transition: opacity 0.3s; padding: 20px;
         }
         .screen.hidden { opacity: 0; pointer-events: none; }
-        .screen h2 { font-size: 42px; color: var(--accent); margin-bottom: 10px; font-family: 'Courier New', monospace; text-align: center; }
-        .screen p { font-size: 16px; color: #bdc3c7; max-width: 600px; line-height: 1.5; margin-bottom: 25px; text-align: center; }
+        .screen h2 { font-size: 32px; color: var(--accent); margin-bottom: 10px; font-family: 'Courier New', monospace; text-align: center; }
+        .screen p { font-size: 14px; color: #bdc3c7; max-width: 600px; line-height: 1.5; margin-bottom: 25px; text-align: center; }
         
-        .map-selector {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
+        .map-selector { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center; }
         .map-card {
-            display: flex;
-            flex-direction: column;
-            width: 130px;
-            height: 110px;
-            border: 3px solid #555;
-            cursor: pointer;
-            position: relative;
-            background: #34495e;
-            border-radius: 12px;
-            transition: transform 0.2s, border-color 0.2s;
-            overflow: hidden;
-            align-items: center;
-            justify-content: center;
+            display: flex; flex-direction: column; width: 110px; height: 90px;
+            border: 3px solid #555; cursor: pointer; position: relative;
+            background: #34495e; border-radius: 12px; transition: transform 0.2s;
+            overflow: hidden; align-items: center; justify-content: center;
         }
-        .map-card:hover { transform: scale(1.05); }
         .map-card.selected { border-color: var(--primary); box-shadow: 0 0 15px var(--primary); transform: scale(1.05); }
-        .map-card .icon { font-size: 36px; margin-bottom: 8px; }
-        .map-card span { font-size: 13px; font-weight: bold; padding: 4px; width: 100%; background: rgba(0,0,0,0.4); }
+        .map-card .icon { font-size: 30px; margin-bottom: 5px; }
+        .map-card span { font-size: 11px; font-weight: bold; padding: 2px; width: 100%; background: rgba(0,0,0,0.4); }
 
         .big-btn {
-            padding: 12px 30px;
-            font-size: 20px;
-            background: var(--primary);
-            border: none;
-            color: white;
-            border-radius: 50px;
-            cursor: pointer;
-            font-weight: bold;
-            box-shadow: 0 5px 15px rgba(39, 174, 96, 0.4);
+            padding: 12px 30px; font-size: 20px; background: var(--primary);
+            border: none; color: white; border-radius: 50px; cursor: pointer;
+            font-weight: bold; box-shadow: 0 5px 15px rgba(39, 174, 96, 0.4);
             transition: transform 0.1s;
         }
         .big-btn:active { transform: scale(0.95); }
         
+        /* Menu Buttons Row */
+        .menu-row { display: flex; gap: 10px; margin-top: 15px; }
+        .small-action-btn { background: transparent; border: 1px solid #7f8c8d; padding: 8px 12px; border-radius: 6px; color: #bdc3c7; font-size: 12px; cursor: pointer; }
+        .small-action-btn:hover { border-color: white; color: white; }
+
         /* Notifications */
         #notification-area {
-            position: absolute;
-            top: 60px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 300px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-            pointer-events: none;
-            z-index: 100;
+            position: absolute; top: 60px; left: 50%; transform: translateX(-50%);
+            width: 300px; display: flex; flex-direction: column; align-items: center;
+            gap: 5px; pointer-events: none; z-index: 100;
         }
-
         .toast {
-            background: rgba(0,0,0,0.85);
-            color: var(--accent);
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-weight: bold;
-            font-size: 14px;
-            border: 1px solid var(--accent);
-            animation: floatUp 2s forwards;
-            white-space: nowrap;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.85); color: var(--accent); padding: 6px 14px;
+            border-radius: 20px; font-weight: bold; font-size: 14px; border: 1px solid var(--accent);
+            animation: floatUp 2s forwards; white-space: nowrap; box-shadow: 0 2px 10px rgba(0,0,0,0.5);
         }
         
-        /* Boss Bar */
         #boss-bar-container {
-            position: absolute;
-            top: 15px; /* Pushed down slightly */
-            left: 50%;
-            transform: translateX(-50%);
-            width: 50%;
-            max-width: 300px;
-            height: 24px;
-            background: rgba(0,0,0,0.7);
-            border: 2px solid #c0392b;
-            border-radius: 15px;
-            overflow: hidden;
-            display: none;
-            z-index: 90;
+            position: absolute; top: 15px; left: 50%; transform: translateX(-50%);
+            width: 50%; max-width: 300px; height: 24px; background: rgba(0,0,0,0.7);
+            border: 2px solid #c0392b; border-radius: 15px; overflow: hidden; display: none; z-index: 90;
         }
-        #boss-bar-fill {
-            height: 100%;
-            width: 100%;
-            background: linear-gradient(90deg, #c0392b, #e74c3c);
-            transition: width 0.1s;
-        }
+        #boss-bar-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #c0392b, #e74c3c); transition: width 0.1s; }
         #boss-bar-label {
-            position: absolute;
-            width: 100%;
-            text-align: center;
-            top: 2px;
-            font-weight: bold;
-            font-size: 11px;
-            text-shadow: 1px 1px 2px black;
-            color: white;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            position: absolute; width: 100%; text-align: center; top: 2px;
+            font-weight: bold; font-size: 11px; text-shadow: 1px 1px 2px black;
+            color: white; text-transform: uppercase; letter-spacing: 1px;
+        }
+
+        .version-tag {
+            position: absolute; bottom: 10px; right: 10px; color: #555; font-size: 10px;
         }
 
         @keyframes floatUp {
@@ -481,6 +338,7 @@
                 <p><b>General Jackrabbit</b> has deployed his legions!<br>
                    Beware the <b style="color:#e74c3c">Tanks</b> (Immune to sharp) and <b style="color:#f1c40f">Air Support</b>!<br>
                    Deploy the Turtle Squad to defend the realm.</p>
+                
                 <div class="map-selector">
                     <div class="map-card selected" onclick="selectMap(0, this)">
                         <div class="icon">🏖️</div>
@@ -495,7 +353,14 @@
                         <span>Magma Core</span>
                     </div>
                 </div>
+                
                 <button class="big-btn" onclick="startGame()">Squad Up!</button>
+
+                <div class="menu-row">
+                    <button class="small-action-btn" onclick="saveGame()">💾 Save Progress</button>
+                    <button class="small-action-btn" onclick="hardReset()">🔄 Update / Reset</button>
+                </div>
+                <div class="version-tag">v1.2.0</div>
             </div>
 
             <!-- PAUSE SCREEN -->
@@ -503,7 +368,10 @@
                 <h2>Tactical Pause</h2>
                 <p>Reviewing strategy...</p>
                 <button class="big-btn" onclick="togglePause()">Resume</button>
-                <button class="btn" onclick="returnToVillage()" style="margin-top: 20px; background: transparent; border: none; color: #95a5a6; text-decoration: underline; box-shadow: none;">Retreat to Menu</button>
+                <div class="menu-row">
+                    <button class="small-action-btn" onclick="saveGame()">💾 Save</button>
+                    <button class="small-action-btn" onclick="returnToVillage()">🏳️ Retreat to Menu</button>
+                </div>
             </div>
 
             <!-- GAME OVER / WIN SCREEN -->
@@ -519,51 +387,105 @@
 
 <script>
 /**
- * SHELL-NO! TOWER DEFENSE
- * Responsive Mobile Update
+ * SHELL-NO! TOWER DEFENSE v1.2
+ * Responsive Mobile Update (Portrait Support)
  */
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+
+// --- Global Config ---
+const GAME_WIDTH = 800;
+const GAME_HEIGHT = 550;
+let isPortraitMode = false; // Track if we are rotating the game
 
 // --- Responsive Engine ---
 function resizeGame() {
     const container = document.getElementById('game-container');
     const wrapper = document.getElementById('game-wrapper');
     
-    // Available space (minus padding/margins)
-    const maxWidth = window.innerWidth - 20; 
-    const maxHeight = window.innerHeight - 20;
+    const winWidth = window.innerWidth;
+    const winHeight = window.innerHeight;
     
-    const baseWidth = 800;
-    const baseHeight = 550;
-    
-    // Determine scale based on the most constrained dimension
-    const scaleX = maxWidth / baseWidth;
-    const scaleY = maxHeight / baseHeight;
-    const scale = Math.min(scaleX, scaleY, 1.2); // Cap scale at 1.2x to prevent blur
-    
-    container.style.transform = `scale(${scale})`;
+    // Check orientation
+    isPortraitMode = winHeight > winWidth;
+
+    if (isPortraitMode) {
+        // ROTATE MODE: Game Width becomes Screen Height
+        // Scale to fit width (which is physically screen height)
+        const scale = Math.min(winWidth / GAME_HEIGHT, winHeight / GAME_WIDTH);
+        
+        container.style.width = `${GAME_WIDTH}px`;
+        container.style.height = `${GAME_HEIGHT}px`;
+        container.style.transform = `rotate(90deg) scale(${scale})`;
+    } else {
+        // STANDARD MODE
+        const scale = Math.min(winWidth / GAME_WIDTH, winHeight / GAME_HEIGHT);
+        container.style.width = `${GAME_WIDTH}px`;
+        container.style.height = `${GAME_HEIGHT}px`;
+        container.style.transform = `rotate(0deg) scale(${scale})`;
+    }
 }
 
 // Attach listeners for resize
 window.addEventListener('resize', resizeGame);
 window.addEventListener('load', resizeGame);
 
-// Improved Input Mapping for scaled content
+// Input Mapping (Corrects for Rotation/Scale)
 function getMousePos(evt) {
     const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    
-    // Handle Touch vs Mouse
     const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
     const clientY = evt.touches ? evt.touches[0].clientY : evt.clientY;
 
-    return {
-        x: (clientX - rect.left) * scaleX,
-        y: (clientY - rect.top) * scaleY
-    };
+    if (isPortraitMode) {
+        // When rotated 90deg:
+        // Visual X (Screen Y relative to top) maps to Game X
+        // Visual Y (Screen X relative to left) maps to Game Y (inverted)
+        
+        // This is complex because getBoundingClientRect returns the post-transform box.
+        // We need to map manually based on the container state.
+        
+        // Actually, let's use a simpler approach relative to the container element
+        // But since the container is rotated, e.layerX/Y might be unreliable.
+        // Let's reverse engineer from the visual center.
+        
+        const container = document.getElementById('game-container');
+        // Get scale from style (approximate)
+        const style = window.getComputedStyle(container);
+        const matrix = new WebKitCSSMatrix(style.transform);
+        const scale = Math.sqrt(matrix.a * matrix.a + matrix.b * matrix.b); // Extract scale from matrix
+
+        // Center of screen
+        const cx = window.innerWidth / 2;
+        const cy = window.innerHeight / 2;
+
+        // Offset from center
+        const dx = clientX - cx;
+        const dy = clientY - cy;
+
+        // In rotated space:
+        // Screen Y (dy) corresponds to Game X
+        // Screen X (dx) corresponds to Game Y (inverted)
+        
+        // Game Center is (400, 275)
+        // Rotated 90deg:
+        // Game X = 400 + (dy / scale)
+        // Game Y = 275 - (dx / scale)
+        
+        return {
+            x: (GAME_WIDTH / 2) + (dy / scale),
+            y: (GAME_HEIGHT / 2) - (dx / scale)
+        };
+
+    } else {
+        // Standard Landscape Logic
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        return {
+            x: (clientX - rect.left) * scaleX,
+            y: (clientY - rect.top) * scaleY
+        };
+    }
 }
 
 // --- Configuration ---
@@ -641,9 +563,53 @@ function init() {
         });
     }
     
+    // Auto-Load?
+    if (localStorage.getItem('shellNo_save')) {
+        // Optional: Could auto load here, but let's let user choose map first
+    }
+
     switchScreen('screen-village');
     loop();
     resizeGame(); // Initial scale check
+}
+
+function saveGame() {
+    const data = {
+        money,
+        lives,
+        level,
+        mapIndex: currentMapIndex
+    };
+    localStorage.setItem('shellNo_save', JSON.stringify(data));
+    showToast("Game Saved!");
+}
+
+function loadGame() {
+    const data = JSON.parse(localStorage.getItem('shellNo_save'));
+    if (data) {
+        money = data.money;
+        lives = data.lives;
+        level = data.level;
+        currentMapIndex = data.mapIndex || 0;
+        return true;
+    }
+    return false;
+}
+
+function hardReset() {
+    if(confirm("Update game version and reset all progress?")) {
+        localStorage.removeItem('shellNo_save');
+        if('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                for(let registration of registrations) {
+                    registration.unregister();
+                }
+                window.location.reload(true);
+            });
+        } else {
+            window.location.reload(true);
+        }
+    }
 }
 
 function selectMap(index, el) {
@@ -657,6 +623,13 @@ function startGame() {
     document.getElementById('main-header').classList.add('collapsed');
     switchScreen(null);
     resetGame();
+    
+    // Check for load
+    if (localStorage.getItem('shellNo_save')) {
+        // We could prompt, but for now lets just start fresh unless we add a specific 'Continue' button
+        // resetGame() clears vars, so we are fresh.
+    }
+    
     startWave();
     updateUI();
 }
@@ -687,7 +660,6 @@ function startWave() {
     currentEnemyTypes = waveConfig.types;
     spawnTimer = 0;
     
-    // Check for boss
     if (currentEnemyTypes.includes('general') || currentEnemyTypes.includes('tank')) {
         showToast(`⚠️ HEAVY UNITS APPROACHING! ⚠️`);
     } else {
@@ -701,15 +673,13 @@ function getWaveConfig(lvl) {
 
     let types = ['recruit'];
     if (stage > 2) types.push('pilot');
-    if (stage >= 6) types.push('tank'); // Armored (Lead)
+    if (stage >= 6) types.push('tank'); 
     
-    // Boss Levels
     if (stage === 10) return { count: 1 + loop, interval: 200, types: ['general'] };
     if (stage === 5) return { count: 2 + loop, interval: 150, types: ['tank'] };
     
     if (stage > 7) types.push('tank');
 
-    // Scale count
     const count = 5 + (stage * 1.5) + (loop * 5);
     const interval = Math.max(20, 80 - (stage * 3));
     
@@ -719,20 +689,17 @@ function getWaveConfig(lvl) {
 function update() {
     if (gameState !== 'PLAYING') return;
 
-    // Apply Game Speed Loop
-    const steps = gameSpeed === 1 ? 1 : 2; // Turbo mode = 2 updates per frame
+    const steps = gameSpeed === 1 ? 1 : 2;
     
     for(let s=0; s<steps; s++) {
         frames++;
 
-        // Spawning
         if (enemiesToSpawn > 0) {
             if (spawnTimer <= 0) {
                 const type = currentEnemyTypes[Math.floor(Math.random() * currentEnemyTypes.length)];
                 const newEnemy = new Enemy(type, level, MAPS[currentMapIndex].path);
                 enemies.push(newEnemy);
                 
-                // Track Boss
                 if (type === 'general') {
                     activeBoss = newEnemy;
                     document.getElementById('boss-bar-container').style.display = 'block';
@@ -746,7 +713,6 @@ function update() {
                 spawnTimer--;
             }
         } else if (enemies.length === 0 && waveActive) {
-            // Wave Clear
             waveActive = false;
             level++;
             money += 100 + (level * 10);
@@ -757,10 +723,8 @@ function update() {
             }
         }
 
-        // Updates
         towers.forEach(t => t.update());
         
-        // Update Enemies
         for (let i = enemies.length - 1; i >= 0; i--) {
             enemies[i].update();
             if (enemies[i].dead) {
@@ -783,20 +747,17 @@ function update() {
             }
         }
 
-        // Update Projectiles
         for (let i = projectiles.length - 1; i >= 0; i--) {
             projectiles[i].update();
             if (!projectiles[i].active) projectiles.splice(i, 1);
         }
 
-        // Update Particles
         for (let i = particles.length - 1; i >= 0; i--) {
             particles[i].update();
             if (particles[i].life <= 0) particles.splice(i, 1);
         }
     }
     
-    // Visual only updates (no speedup needed)
     for (let i = floatingTexts.length - 1; i >= 0; i--) {
         floatingTexts[i].update();
         if (floatingTexts[i].life <= 0) floatingTexts.splice(i, 1);
@@ -807,18 +768,14 @@ function update() {
 
 function draw() {
     const map = MAPS[currentMapIndex];
-    
-    // 1. Draw Map Background (Theme based)
     drawMapBackground(map);
 
-    // 2. Draw Path
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     
-    // Path Border/Glow
     ctx.lineWidth = 52;
     if (map.type === 'lava') {
-        ctx.strokeStyle = '#c0392b'; // Lava glow
+        ctx.strokeStyle = '#c0392b';
         ctx.shadowBlur = 20;
         ctx.shadowColor = '#e74c3c';
     } else {
@@ -829,9 +786,8 @@ function draw() {
     ctx.moveTo(map.path[0].x, map.path[0].y);
     for(let i=1; i<map.path.length; i++) ctx.lineTo(map.path[i].x, map.path[i].y);
     ctx.stroke();
-    ctx.shadowBlur = 0; // Reset
+    ctx.shadowBlur = 0;
 
-    // Path Fill
     ctx.lineWidth = 40;
     ctx.strokeStyle = map.pathColor;
     ctx.beginPath();
@@ -839,7 +795,6 @@ function draw() {
     for(let i=1; i<map.path.length; i++) ctx.lineTo(map.path[i].x, map.path[i].y);
     ctx.stroke();
 
-    // 3. Base (Bumble)
     const end = map.path[map.path.length-1];
     const bounce = Math.sin(frames * 0.05) * 5;
     ctx.font = '50px Arial';
@@ -849,14 +804,12 @@ function draw() {
     ctx.font = '30px Arial';
     ctx.fillText('🏰', end.x, end.y + 10 + bounce);
 
-    // 4. Game Objects (Sorted by Y for slight depth effect if needed, but simple is fine)
     towers.forEach(t => t.draw(ctx));
     enemies.forEach(e => e.draw(ctx));
     projectiles.forEach(p => p.draw(ctx));
     particles.forEach(p => p.draw(ctx));
     floatingTexts.forEach(f => f.draw(ctx));
 
-    // 5. Selection Ghost
     if (selectedTowerType && gameState === 'PLAYING') {
         const tType = TOWER_TYPES[selectedTowerType];
         const valid = isValidPlacement(mouseX, mouseY);
@@ -864,7 +817,6 @@ function draw() {
         ctx.save();
         ctx.translate(mouseX, mouseY);
         
-        // Range Indicator - BTD Style
         ctx.beginPath();
         ctx.fillStyle = valid ? 'rgba(200, 200, 200, 0.3)' : 'rgba(231, 76, 60, 0.4)';
         ctx.arc(0, 0, tType.range, 0, Math.PI*2);
@@ -875,7 +827,6 @@ function draw() {
         ctx.stroke();
         ctx.setLineDash([]);
 
-        // Ghost Emoji
         ctx.globalAlpha = 0.8;
         ctx.font = '40px Arial';
         ctx.textAlign = 'center';
@@ -884,17 +835,15 @@ function draw() {
         
         ctx.restore();
     } else if (selectedTowerInstance) {
-        // Highlight Selected Tower - BTD Style
         const t = selectedTowerInstance;
         ctx.beginPath();
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.15)'; // Range fill
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.15)'; 
         ctx.arc(t.x, t.y, t.range, 0, Math.PI*2);
         ctx.fill();
-        ctx.strokeStyle = 'rgba(255,255,255,0.7)'; // White ring
+        ctx.strokeStyle = 'rgba(255,255,255,0.7)'; 
         ctx.lineWidth = 2;
         ctx.stroke();
         
-        // Selection Circle
         ctx.beginPath();
         ctx.strokeStyle = '#f1c40f';
         ctx.lineWidth = 3;
@@ -905,50 +854,42 @@ function draw() {
 
 function drawMapBackground(map) {
     if (map.type === 'beach') {
-        // Sand Gradient
         const sand = ctx.createLinearGradient(0, 0, 0, canvas.height);
         sand.addColorStop(0, '#f1c40f');
         sand.addColorStop(1, '#d35400');
         ctx.fillStyle = sand;
         ctx.fillRect(0,0,canvas.width, canvas.height);
         
-        // Water patches
         ctx.fillStyle = '#3498db';
         ctx.beginPath(); ctx.arc(100, 100, 80, 0, Math.PI*2); ctx.fill();
         ctx.beginPath(); ctx.arc(700, 400, 100, 0, Math.PI*2); ctx.fill();
         
-        // Trees (Simple decoration)
         drawEmoji(50, 50, '🌴', 40);
         drawEmoji(750, 50, '🌴', 40);
         drawEmoji(100, 500, '🌴', 40);
 
     } else if (map.type === 'snow') {
-        // Snow Gradient
         const snow = ctx.createLinearGradient(0, 0, 0, canvas.height);
         snow.addColorStop(0, '#ecf0f1');
         snow.addColorStop(1, '#bdc3c7');
         ctx.fillStyle = snow;
         ctx.fillRect(0,0,canvas.width, canvas.height);
         
-        // Mountains
         ctx.fillStyle = '#95a5a6';
         ctx.beginPath(); ctx.moveTo(0, 550); ctx.lineTo(200, 100); ctx.lineTo(400, 550); ctx.fill();
         ctx.beginPath(); ctx.moveTo(400, 550); ctx.lineTo(600, 150); ctx.lineTo(800, 550); ctx.fill();
         
-        // Pine Trees
         drawEmoji(100, 300, '🌲', 30);
         drawEmoji(700, 300, '🌲', 30);
         drawEmoji(400, 50, '🌲', 30);
 
     } else if (map.type === 'lava') {
-        // Rock Gradient
         const rock = ctx.createRadialGradient(400, 275, 10, 400, 275, 500);
         rock.addColorStop(0, '#2c3e50');
         rock.addColorStop(1, '#000000');
         ctx.fillStyle = rock;
         ctx.fillRect(0,0,canvas.width, canvas.height);
         
-        // Magma Cracks
         ctx.strokeStyle = '#e74c3c';
         ctx.lineWidth = 2;
         ctx.globalAlpha = 0.3;
@@ -996,7 +937,6 @@ class Tower {
         this.targetAngle = 0;
         this.targeting = 'first'; 
 
-        // Upgrades
         this.lvlDmg = 0;
         this.lvlSpd = 0;
         this.spentValue = data.cost;
