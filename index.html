@@ -7,7 +7,7 @@
     
     <!-- PWA Setup -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#27ae60">
+    <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <!-- Turtle Favicon (Data URI) -->
@@ -27,7 +27,7 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
-            background-color: #1a252f;
+            background-color: #000;
             color: white;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             text-align: center;
@@ -40,10 +40,6 @@
             height: 100vh;
             width: 100vw;
             user-select: none;
-            /* Cool background pattern to fill empty space */
-            background-image: radial-gradient(#2c3e50 15%, transparent 16%), radial-gradient(#2c3e50 15%, transparent 16%);
-            background-size: 20px 20px;
-            background-position: 0 0, 10px 10px;
         }
         
         /* Header - Collapsible */
@@ -80,7 +76,7 @@
             width: 800px;
             height: 550px;
             box-shadow: 0 0 50px rgba(0,0,0,0.8);
-            border: 4px solid #34495e;
+            border: 2px solid #333;
             border-radius: 12px;
             background: #000;
             overflow: hidden;
@@ -360,7 +356,7 @@
                     <button class="small-action-btn" onclick="saveGame()">💾 Save Progress</button>
                     <button class="small-action-btn" onclick="hardReset()">🔄 Update / Reset</button>
                 </div>
-                <div class="version-tag">v1.2.0</div>
+                <div class="version-tag">v1.3.0 - Portrait Support</div>
             </div>
 
             <!-- PAUSE SCREEN -->
@@ -387,8 +383,8 @@
 
 <script>
 /**
- * SHELL-NO! TOWER DEFENSE v1.2
- * Responsive Mobile Update (Portrait Support)
+ * SHELL-NO! TOWER DEFENSE v1.3
+ * Mobile Fit Update (Path Clearance & Auto-Scale)
  */
 
 const canvas = document.getElementById('gameCanvas');
@@ -397,7 +393,7 @@ const ctx = canvas.getContext('2d');
 // --- Global Config ---
 const GAME_WIDTH = 800;
 const GAME_HEIGHT = 550;
-let isPortraitMode = false; // Track if we are rotating the game
+let isPortraitMode = false; 
 
 // --- Responsive Engine ---
 function resizeGame() {
@@ -407,12 +403,11 @@ function resizeGame() {
     const winWidth = window.innerWidth;
     const winHeight = window.innerHeight;
     
-    // Check orientation
     isPortraitMode = winHeight > winWidth;
 
     if (isPortraitMode) {
-        // ROTATE MODE: Game Width becomes Screen Height
-        // Scale to fit width (which is physically screen height)
+        // ROTATE MODE: Scale to fit width (which is physically screen height)
+        // No cap on scale
         const scale = Math.min(winWidth / GAME_HEIGHT, winHeight / GAME_WIDTH);
         
         container.style.width = `${GAME_WIDTH}px`;
@@ -427,7 +422,6 @@ function resizeGame() {
     }
 }
 
-// Attach listeners for resize
 window.addEventListener('resize', resizeGame);
 window.addEventListener('load', resizeGame);
 
@@ -438,47 +432,24 @@ function getMousePos(evt) {
     const clientY = evt.touches ? evt.touches[0].clientY : evt.clientY;
 
     if (isPortraitMode) {
-        // When rotated 90deg:
-        // Visual X (Screen Y relative to top) maps to Game X
-        // Visual Y (Screen X relative to left) maps to Game Y (inverted)
-        
-        // This is complex because getBoundingClientRect returns the post-transform box.
-        // We need to map manually based on the container state.
-        
-        // Actually, let's use a simpler approach relative to the container element
-        // But since the container is rotated, e.layerX/Y might be unreliable.
-        // Let's reverse engineer from the visual center.
-        
         const container = document.getElementById('game-container');
-        // Get scale from style (approximate)
         const style = window.getComputedStyle(container);
         const matrix = new WebKitCSSMatrix(style.transform);
-        const scale = Math.sqrt(matrix.a * matrix.a + matrix.b * matrix.b); // Extract scale from matrix
+        const scale = Math.sqrt(matrix.a * matrix.a + matrix.b * matrix.b); 
 
-        // Center of screen
         const cx = window.innerWidth / 2;
         const cy = window.innerHeight / 2;
 
-        // Offset from center
         const dx = clientX - cx;
         const dy = clientY - cy;
 
-        // In rotated space:
-        // Screen Y (dy) corresponds to Game X
-        // Screen X (dx) corresponds to Game Y (inverted)
-        
-        // Game Center is (400, 275)
-        // Rotated 90deg:
-        // Game X = 400 + (dy / scale)
-        // Game Y = 275 - (dx / scale)
-        
+        // In rotated space: dy -> x, dx -> -y relative to center
         return {
             x: (GAME_WIDTH / 2) + (dy / scale),
             y: (GAME_HEIGHT / 2) - (dx / scale)
         };
 
     } else {
-        // Standard Landscape Logic
         const scaleX = canvas.width / rect.width;
         const scaleY = canvas.height / rect.height;
         return {
@@ -489,7 +460,6 @@ function getMousePos(evt) {
 }
 
 // --- Configuration ---
-// Damage Types: 'sharp', 'crush', 'chem', 'explosive'
 const TOWER_TYPES = {
     1: { name: "Rifle-Shell", emoji: "🐢", cost: 50, range: 130, damage: 25, speed: 45, dmgType: 'sharp', desc: "Sharp. Fails vs Tanks." },
     2: { name: "Sniper-Shell", emoji: "🔭", cost: 120, range: 250, damage: 90, speed: 90, dmgType: 'sharp', desc: "High Range/Dmg." },
@@ -498,27 +468,28 @@ const TOWER_TYPES = {
     5: { name: "Shinobi", emoji: "🥷", cost: 500, range: 140, damage: 40, speed: 20, dmgType: 'sharp', desc: "Fast Crit. Fails vs Tanks." }
 };
 
+// UPDATED MAP PATHS TO CLEAR BOTTOM UI (Max Y ~420)
 const MAPS = [
     { 
         name: "Shoreline Defense", 
         bgColor: '#3498db', 
         type: 'beach',
         pathColor: '#f1c40f', 
-        path: [{x:0,y:100}, {x:200,y:100}, {x:200,y:400}, {x:500,y:400}, {x:500,y:150}, {x:700,y:150}, {x:700,y:450}, {x:850,y:450}] 
+        path: [{x:0,y:100}, {x:200,y:100}, {x:200,y:400}, {x:500,y:400}, {x:500,y:150}, {x:700,y:150}, {x:700,y:400}, {x:850,y:400}] 
     },
     { 
         name: "Alpine Base", 
         bgColor: '#81d4fa', 
         type: 'snow',
         pathColor: '#bdc3c7', 
-        path: [{x:0,y:275}, {x:200,y:275}, {x:200,y:100}, {x:400,y:100}, {x:400,y:450}, {x:600,y:450}, {x:600,y:275}, {x:850,y:275}] 
+        path: [{x:0,y:275}, {x:200,y:275}, {x:200,y:100}, {x:400,y:100}, {x:400,y:400}, {x:600,y:400}, {x:600,y:275}, {x:850,y:275}] 
     },
     { 
         name: "Magma Core", 
         bgColor: '#2c3e50', 
         type: 'lava',
         pathColor: '#5a3030', 
-        path: [{x:0,y:50}, {x:100,y:50}, {x:100,y:500}, {x:300,y:500}, {x:300,y:100}, {x:600,y:100}, {x:600,y:400}, {x:850,y:400}] 
+        path: [{x:0,y:50}, {x:100,y:50}, {x:100,y:420}, {x:300,y:420}, {x:300,y:100}, {x:600,y:100}, {x:600,y:400}, {x:850,y:400}] 
     }
 ];
 
@@ -540,13 +511,11 @@ let particles = [];
 let floatingTexts = [];
 let activeBoss = null;
 
-// Wave Control
 let waveActive = false;
 let enemiesToSpawn = 0;
 let spawnTimer = 0;
 let currentEnemyTypes = [];
 
-// Interaction
 let selectedTowerType = null;
 let selectedTowerInstance = null;
 let mouseX = 0;
@@ -556,21 +525,19 @@ let repairCost = 150;
 // --- Engine Core ---
 
 function init() {
-    // Service Worker Registration
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('sw.js').catch(err => console.log('SW fail', err));
         });
     }
     
-    // Auto-Load?
     if (localStorage.getItem('shellNo_save')) {
-        // Optional: Could auto load here, but let's let user choose map first
+        // save found
     }
 
     switchScreen('screen-village');
     loop();
-    resizeGame(); // Initial scale check
+    resizeGame();
 }
 
 function saveGame() {
@@ -623,13 +590,6 @@ function startGame() {
     document.getElementById('main-header').classList.add('collapsed');
     switchScreen(null);
     resetGame();
-    
-    // Check for load
-    if (localStorage.getItem('shellNo_save')) {
-        // We could prompt, but for now lets just start fresh unless we add a specific 'Continue' button
-        // resetGame() clears vars, so we are fresh.
-    }
-    
     startWave();
     updateUI();
 }
